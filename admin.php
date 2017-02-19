@@ -1,6 +1,7 @@
 <?php
 class admin
 {
+  /*this class controls the management part*/
     private $id;
     private $name;
     private $email;
