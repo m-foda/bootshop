@@ -28,7 +28,6 @@ $statement->bind_param('i', $uid);
 $statement->execute();
 $result = $statement->get_result();
 
-
  ?>
 
 
@@ -172,6 +171,7 @@ $result = $statement->get_result();
                   echo '<tr><th style="text-align: center;" colspan="6"><H3>No products in your cart<H3></th></tr>';
                 } ?>
                 <?php
+								$cart = array();
                 for ($i = 0; $i < $result->num_rows; $i++) {
                   $row = $result->fetch_assoc();
                   echo '<tr>';
@@ -182,10 +182,12 @@ $result = $statement->get_result();
                   echo '<td>'.$row['price'].'</td>';
                   echo '<td><input type="button" class="btn btn-danger" name="deleteProduct" value="Delete"></td>';
                   echo '</tr>';
-                } ?>
+									$cart[$row['product_id']] = $row['order_quantity'];
+                }
+								$_SESSION['cart'] = $cart ?>
 				      </tbody>
             </table>
-            <a href="index.php" class="btn btn-large pull-right" <?php if ($result->num_rows == 0) { echo 'style="display:none;"';} ?>> Checkout <i class="icon-arrow-right"></i></a>
+            <a href="orderprocessing.php".<?php ?>." class="btn btn-large pull-right" <?php if ($result->num_rows == 0) { echo 'style="display:none;"';} ?>> Checkout <i class="icon-arrow-right"></i></a>
 </div>
 </div></div>
 </div>
