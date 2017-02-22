@@ -235,7 +235,6 @@ class User
 		$user = $result->fetch_assoc();
 		$statment->close();
 		$con->close();
-		echo "getymail called";
 		return $user;
 
 	}

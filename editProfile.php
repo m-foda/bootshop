@@ -1,8 +1,12 @@
 <?php
-require 'config.php';
-require 'productclass.php';
-require 'categoryclass.php';
-/* Cart and Credit*/
+require_once 'User.php';
+session_start();
+if(!isset($_SESSION['user_name'])) {
+  header('Location:index.php');
+}
+if (isset($_SESSION['loggedInAdmin'])) {
+	header('Location:adminindex.php');
+}
 $user_credit = 0;
 $cart_number = 0;
 if(isset($_SESSION['user_name'])) {
@@ -11,228 +15,143 @@ if(isset($_SESSION['user_name'])) {
 	$user_credit  = getCreditById($uid, $con);
 	$cart_number = getCartNumById($uid, $con);
 }
-/*Search Categories*/
-$products=productclass::getAll();
-$catname;
-$catid;
-$statement = categoryclass::getCatById();
-$statement->bind_result($catname, $catid);
-$statement->store_result();
-
-$search=categoryclass::searchSubCat();
-
 ?>
+
 <!DOCTYPE html>
-<html lang="en">
+<htmllang="en">
   <head>
     <meta charset="utf-8">
     <title>Bootshop online Shopping cart</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
-    <!-- Bootstrap style -->
+
+<!-- Bootstrap style -->
     <link id="callCss" rel="stylesheet" href="themes/bootshop/bootstrap.min.css" media="screen"/>
     <link href="themes/css/base.css" rel="stylesheet" media="screen"/>
-    <!-- Bootstrap style responsive -->
-    <link href="themes/css/bootstrap-responsive.min.css" rel="stylesheet"/>
-    <link href="themes/css/font-awesome.css" rel="stylesheet" type="text/css">
-    <!-- Google-code-prettify -->
-    <link href="themes/js/google-code-prettify/prettify.css" rel="stylesheet"/>
-    <!-- fav and touch icons -->
+<!-- Bootstrap style responsive -->
+	<link href="themes/css/bootstrap-responsive.min.css" rel="stylesheet"/>
+	<link href="themes/css/font-awesome.css" rel="stylesheet" type="text/css">
+<!-- Google-code-prettify -->
+	<link href="themes/js/google-code-prettify/prettify.css" rel="stylesheet"/>
+<!-- fav and touch icons -->
     <link rel="shortcut icon" href="themes/images/ico/favicon.ico">
     <link rel="apple-touch-icon-precomposed" sizes="144x144" href="themes/images/ico/apple-touch-icon-144-precomposed.png">
     <link rel="apple-touch-icon-precomposed" sizes="114x114" href="themes/images/ico/apple-touch-icon-114-precomposed.png">
     <link rel="apple-touch-icon-precomposed" sizes="72x72" href="themes/images/ico/apple-touch-icon-72-precomposed.png">
     <link rel="apple-touch-icon-precomposed" href="themes/images/ico/apple-touch-icon-57-precomposed.png">
-    <style type="text/css" id="enject"></style>
-    <!-- jquery-->
-    <script src="jquery-3.1.1.js"></script>
-    <script >
-    	$(function(){
-    		$("input[id='input_email']").on('blur',function(event){
-    				$.ajax({
-    					url:'registerAjax.php',
-    					type:'POST',
-    					data:{
-    						email: $(this).val(),
-    					},
-    				})
-    				.done(function(data) {
-    					if(data === "success") {
-    						console.log("success");
-    						$("#error").text("");
-    						$("#Register").css("disabled", "true")
-    					}
-    					if(data === "fail")	{
-    						$("#error").text("Email unvalid");
-    						$("#Register").css("disabled","false");
-    					}
-    				})
-    				.fail(function(data){
-    				})
-    		});
-    	})
-    </script>
+	<style type="text/css" id="enject"></style>
   </head>
-  <body>
-    <div id="header">
-      <div class="container">
-        <div id="welcomeLine" class="row">
-          <div class="span6">Welcome!<strong> <?php if(isset($_SESSION['user_name'])) echo "". $_SESSION['user_name']."";?></strong></div>
-          <div class="span6">
-          	<div class="pull-right">
-          		<span <?php if(!isset($_SESSION['user_name'])) { echo 'style="display: none;"';} ?>
-          		class="btn btn-mini"><?php echo '$ '.$user_credit;?></span>
-          		<a <?php if(!isset($_SESSION['user_name'])) { echo 'style="display: none;"';} ?> href="product_summary.php">
-          			<span class="btn btn-mini btn-primary">
-          				<i class="icon-shopping-cart icon-white"></i>
-          				[ <?php echo $cart_number; ?> ] Items in your cart
-          			</span>
-          		</a>
-          	</div>
-          </div>
-        </div>
-          <!-- Navbar ================================================== -->
-        <div id="logoArea" class="navbar">
-          <a id="smallScreen" data-target="#topMenu" data-toggle="collapse" class="btn btn-navbar">
-          	<span class="icon-bar"></span>
-          	<span class="icon-bar"></span>
-          	<span class="icon-bar"></span>
-          </a>
-          <div class="navbar-inner">
-            <a class="brand" href="index.php"><img src="themes/images/logo.png" alt="Bootsshop"/></a>
-            <?php
-            	echo'<form class="form-inline navbar-search" method="get" action="search.php" >';
-            	echo '<input id="srchFld" name="prices" class="srchTxt" type="number" />';
-              echo '<select id="catFld" name="category" class="srchTxt">';
-              echo '<option>---</option>';
-              for ($i = 0; $i < $search->num_rows; $i++) {
-            		$row = $search->fetch_assoc();
-               	echo '<option value='.$row['category_id'].'>'.$row['category_name'].'</option>';
-            	}
-            	echo '</select>';
-              echo'<button type="submit" id="submitButton" class="btn btn-primary"> Go</button>';
-              echo'</form>'; ?>
-            <ul id="topMenu" class="nav pull-right">
-              <li class=""><a href="contact.php">Contact</a></li>
-              <li class="">
-                <a href="login.php" style="padding-right:0"><span class="btn btn-large btn-success">Login</span></a>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
+<body>
+<div id="header">
+<div class="container">
+  <div id="welcomeLine" class="row">
+  	<div class="span6">Welcome!<strong> <?php if(isset($_SESSION['user_name'])) echo "". $_SESSION['user_name']."";?></strong></div>
+  	<div class="span6">
+      <div class="pull-right">
+  			<span <?php if(!isset($_SESSION['user_name'])) { echo 'style="display: none;"';} ?>
+  			class="btn btn-mini"><?php echo '$ '.$user_credit;?></span>
+  			<a <?php if(!isset($_SESSION['user_name'])) { echo 'style="display: none;"';} ?> href="product_summary.php">
+  				<span class="btn btn-mini btn-primary">
+  					<i class="icon-shopping-cart icon-white"></i>
+  					[ <?php echo $cart_number; ?> ] Items in your cart
+  				</span>
+  			</a>
+  		</div>
+  	</div>
+  </div>
+<!-- Navbar ================================================== -->
+<div id="logoArea" class="navbar">
+<a id="smallScreen" data-target="#topMenu" data-toggle="collapse" class="btn btn-navbar">
+	<span class="icon-bar"></span>
+	<span class="icon-bar"></span>
+	<span class="icon-bar"></span>
+</a>
+  <div class="navbar-inner">
+    <a class="brand" href="index.php"><img src="themes/images/logo.png" alt="Bootsshop"/></a>
+		<form class="form-inline navbar-search" method="post" action="products.php" >
+		<input id="srchFld" class="srchTxt" type="text" />
+		  <select class="srchTxt">
+			<option>All</option>
+			<option>CLOTHES </option>
+			<option>FOOD AND BEVERAGES </option>
+			<option>HEALTH & BEAUTY </option>
+			<option>SPORTS & LEISURE </option>
+			<option>BOOKS & ENTERTAINMENTS </option>
+		</select>
+		  <button type="submit" id="submitButton" class="btn btn-primary">Go</button>
+    </form>
+    <ul id="topMenu" class="nav pull-right">
+	<!-- <li class=""><a href="special_offer.php">Specials Offer</a></li>
+	 <li class=""><a href="normal.php">Delivery</a></li>-->
+	 <li class=""><a href="contact.php">Contact</a></li>
+   <?php if(!isset($_SESSION['user_name']))
+       {echo "<li class=''><a href='register.php' style='padding-right:0'><span class='btn btn-large btn-success'>Register</span></a></li>
+  <li class=''>
+  <a href='login.php' style='padding-right:0'><span class='btn btn-large btn-success'>Login</span></a>";
+ }
+  else
+   echo"<a href='logout.php' style='padding-right:0'><span class='btn btn-large btn-success'style='margin-top:10px;
+'>Logout</span></a>";
+   ?>
+    </ul>
+  </div>
+</div>
+</div>
+</div>
 <!-- Header End====================================================================== -->
 <div id="mainBody">
 	<div class="container">
-	<div class="row">
-<!-- Sidebar ================================================== -->
-<div id="sidebar" class="span3">
-  <div class="well well-small">
-    <a id="myCart" href="product_summary.php">
-      <img src="themes/images/ico-cart.png" alt="cart"> <?php echo $cart_number; ?> Items in your cart
-      <span class="badge badge-warning pull-right"> <?php echo '$ '.$user_credit; ?> </span>
-    </a>
-  </div>
-  <?php
-    echo	'<ul id="sideManu" class="nav nav-tabs nav-stacked">';
-    for ($i=0; $i < $statement->num_rows ; $i++) {
-      $statement->fetch();
-      echo '<li class="subMenu open"><a> '. $catname.'</a>';
-      $result = categoryclass::getSubCategories($catid);
-      for ($j=0; $j < $result->num_rows; $j++) {
-        $row = $result->fetch_assoc();
-        echo '<ul';
-        if ($i>0) {echo ' style="display:none"';}
-        echo '>';
-        echo '<li><a href="products.php?category_id='.$row['category_id'].'" id= '.$row['category_id'].'><i class="icon-chevron-right"></i>'.$row['category_name'].'</a></li>';
-        echo '</ul>';
-      }
-      echo '</li>';
-    }
-    echo '</ul>'; ?>
-</div>
+	   <div class="row">
+<!-- Sidebar ==================================================-->
+        <form class="" action="LoginControl.php" method="post">
+        <?php
+          $userEmail = $_SESSION['user_email'];
+          $user = User::getByEmail($userEmail);
+        echo "<div class='row' align='center'>";
+          echo "<div class='table-responsive' style='width:300px;'>";
+            echo "<table class='table' >";
+            foreach ($user as $key => $value) {
+              if($key == 'user_id' || $key == 'delete_admin_id' || $key == 'delete_reason' || $key == 'email')
+              continue;
+              else {
+                echo "<tr>";
+                if($key == 'birthday')
+                {
+                  echo "<th>";
+                  echo $key;
+                  echo "</th>";
+                  echo "<td>";
+                  echo "<input type ='date' name ='{$key}' value ='$value'/>";
+                  echo "</td>";
+                }else {
+                    echo "<th>";
+                    echo $key;
+                    echo "</th>";
+                    echo "<td>";
+                    echo "<input type ='text' name ='{$key}' value ='$value'/>";
+                    echo "</td>";
+                }
+                echo "</tr>";
+              }
+
+            }
+
+            echo "</table>";
+          echo "</div>";
+        echo"</div>";
+        echo "<div align='center'>";
+          echo "<input type='submit' class='btn btn-primary' name='Save' value='Save'/>";
+      echo"</div>";
+
+
+        ?>
+      </form>
+
 <!-- Sidebar end=============================================== -->
-	<div class="span9">
-    <ul class="breadcrumb">
-		<li><a href="index.php">Home</a> <span class="divider">/</span></li>
-		<li class="active">Registration</li>
-    </ul>
-	<h3> Registration</h3>
-	<div class="well">
-	<form class="form-horizontal" method="post" action="LoginControl.php" id="register-form" >
-		<h4>Your personal information</h4>
-		 <div class="control-group">
-			<label class="control-label" for="inputLnam">Name <sup>*</sup></label>
-			<div class="controls">
-			  <input type="text" id="inputname" placeholder="Name" name="user_name" required>
-			</div>
-		 </div>
-		<div class="control-group">
-		<label class="control-label" for="input_email">Email <sup>*</sup></label>
-		<div class="controls">
-		  <input type="email" id="input_email" placeholder="Email" name="email" required>
-		</div>
-		<span id="error"></span>
-	  </div>
-	<div class="control-group">
-		<label class="control-label" for="inputPassword1">Password <sup>*</sup></label>
-		<div class="controls">
-		  <input type="password" id="inputPassword1" placeholder="Password" name="password" required minlength="3">
-		</div>
-	  </div>
-		<div class="control-group">
-		<label class="control-label">Date of Birth <sup>*</sup></label>
-		<div class="controls">
-			<input type="date" name="birthday" required>
-			</div>
-	  </div>
 
-		<div class="control-group">
-			<label class="control-label" for="job">Job <sup>*</sup> </label>
-			<div class="controls">
-			  <input type="text" id="job" placeholder="job" name="job" required />
-			</div>
-		</div>
-
-		<div class="control-group">
-			<label class="control-label" for="address">Address<sup>*</sup></label>
-			<div class="controls">
-			  <input type="text" id="address" placeholder="Address" name="address" required /> <!--<span>Street address, P.O. box, company name, c/o</span>-->
-			</div>
-		</div>
-
-		<div class="control-group">
-			<label class="control-label" for="credit">Credit<sup>*</sup></label>
-			<div class="controls">
-			  <input type="text" id="credit" placeholder="credit" name="credit" required maxlength="12" />
-			</div>
-		</div>
-		<div class="control-group">
-			<label class="control-label" for="interests">Interests<sup>*</sup></label>
-			<div class="controls">
-			  <select id="interests" >
-				<option value="">-</option>
-				</select>
-			</div>
-		</div>
-
-	<p><sup>*</sup>Required field	</p>
-
-	<div class="control-group">
-			<div class="controls">
-				<input type="hidden" name="email_create" value="1">
-				<input type="hidden" name="is_new_customer" value="1">
-				<input class="btn btn-large btn-success" id ="Register" type="submit"  value="Register" name="Register" />
-			</div>
-		</div>
-	</form>
-</div>
-
-</div>
-</div>
-</div>
+    </div>
+  </div>
 </div>
 <!-- MainBody End ============================= -->
 <!-- Footer ================================================================== -->
